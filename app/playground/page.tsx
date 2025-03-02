@@ -96,7 +96,7 @@ export default function Playground() {
             <div className="mb-4 p-3 bg-gray-50 rounded-md">
               <h3 className="font-medium">Validation Status: {result.message}</h3>
               <div className="mt-2">
-                {result.details.validationChecks?.map((check: any, index: number) => (
+                {result.details?.validationChecks?.map((check: any, index: number) => (
                   <div key={index} className="flex items-center gap-2">
                     <span className={`w-4 h-4 rounded-full ${check.passed ? 'bg-green-500' : 'bg-red-500'}`}></span>
                     <span>{check.name} check: {check.passed ? 'Passed' : 'Failed'}</span>
