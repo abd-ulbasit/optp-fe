@@ -1,31 +1,62 @@
-// app/playground/page.tsx
 'use client';
-
+import axios from 'axios';
 import { useState } from 'react';
+
+// Helper function to parse and format policy string
+const formatPolicyString = (policyStr: string) => {
+  try {
+    // First, parse the JSON string if it's a JSON string
+    let policy = policyStr;
+
+    // If the policy is wrapped in quotes, remove them and unescape
+    if (typeof policy === 'string' && policy.startsWith('"') && policy.endsWith('"')) {
+      policy = JSON.parse(policy);
+    }
+
+    // Return the formatted policy with proper indentation
+    return policy;
+  } catch (error) {
+    console.error("Error formatting policy:", error);
+    return policyStr; // Return original if parsing fails
+  }
+};
 
 export default function Playground() {
   const [kyvernoPolicy, setKyvernoPolicy] = useState('');
-  const [result, setResult] = useState('');
+  const [result, setResult] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async () => {
+    const NEXT_PUBLIC_EXPRESS_BE_URL = process.env.NEXT_PUBLIC_EXPRESS_BE_URL;
     setIsLoading(true);
     try {
-      const response = await fetch("http://127.0.0.1:3333"+'/playground/kyverno-to-rego', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ kyvernoPolicy }),
-      });
+      const response = await axios.post(
+        NEXT_PUBLIC_EXPRESS_BE_URL + '/translate',
+        { kyvernoPolicy: kyvernoPolicy },
+        { headers: { 'Content-Type': 'application/json' } }
+      );
       
-      const data = await response.json();
-      setResult(JSON.stringify(data, null, 2));
+      setResult(response.data);
     } catch (error) {
-      setResult(`Error: ${error instanceof Error ? error.message : String(error)}`);
+      setResult({
+        error: `Error: ${error instanceof Error ? error.message : String(error)}`
+      });
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // Function to render the policy with proper formatting
+  const renderFormattedPolicy = () => {
+    if (!result || !result.policy) return null;
+
+    const formattedPolicy = formatPolicyString(result.policy);
+
+    return (
+      <pre className="bg-gray-100 p-4 rounded-md overflow-auto whitespace-pre text-sm">
+        {formattedPolicy}
+      </pre>
+    );
   };
 
   return (
@@ -41,7 +72,7 @@ export default function Playground() {
         </label>
         <textarea
           id="kyvernoPolicy"
-          className="w-full h-64 p-2 border border-gray-300 rounded-md"
+          className="w-full h-64 p-2 border border-gray-300 rounded-md font-mono text-sm"
           value={kyvernoPolicy}
           onChange={(e) => setKyvernoPolicy(e.target.value)}
           placeholder="Paste your Kyverno policy here..."
@@ -59,9 +90,35 @@ export default function Playground() {
       {result && (
         <div className="mt-6">
           <h2 className="text-xl font-semibold mb-2">Result:</h2>
-          <pre className="bg-gray-100 p-4 rounded-md overflow-auto">
-            {result}
-          </pre>
+
+          {/* Display validation details */}
+          {result.details && (
+            <div className="mb-4 p-3 bg-gray-50 rounded-md">
+              <h3 className="font-medium">Validation Status: {result.message}</h3>
+              <div className="mt-2">
+                {result.details.validationChecks?.map((check: any, index: number) => (
+                  <div key={index} className="flex items-center gap-2">
+                    <span className={`w-4 h-4 rounded-full ${check.passed ? 'bg-green-500' : 'bg-red-500'}`}></span>
+                    <span>{check.name} check: {check.passed ? 'Passed' : 'Failed'}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Render the formatted policy */}
+          <h3 className="font-medium mb-2">Policy:</h3>
+          {renderFormattedPolicy()}
+
+          {/* Display raw JSON result for debugging */}
+          <div className="mt-4">
+            <details>
+              <summary className="cursor-pointer text-blue-600">View Raw Response</summary>
+              <pre className="bg-gray-100 p-4 rounded-md overflow-auto mt-2 text-xs">
+                {JSON.stringify(result, null, 2)}
+              </pre>
+            </details>
+          </div>
         </div>
       )}
     </div>
