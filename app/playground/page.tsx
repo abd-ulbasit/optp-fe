@@ -110,6 +110,22 @@ export default function Playground() {
           <h3 className="font-medium mb-2">Policy:</h3>
           {renderFormattedPolicy()}
 
+          <div>
+            <h2 className='text-lg font-semibold my-2'>
+              Rego Policy Explanation:
+            </h2>
+            <p className="mt-2">
+              {result?.metadata?.rego_policy_explanation}
+            </p>
+          </div>
+          <div>
+            <h2 className='text-lg font-semibold my-2'>
+              Conversion Explanation:
+            </h2>
+            <p className="mt-2">
+              {result?.metadata?.conversion_explanation}
+            </p>
+          </div>
           {/* Display raw JSON result for debugging */}
           <div className="mt-4">
             <details>
