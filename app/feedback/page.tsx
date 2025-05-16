@@ -16,7 +16,7 @@ export default function Feedback() {
             const response = await axios.post(
                 NEXT_PUBLIC_EXPRESS_BE_URL + "/feedback",
                 {
-                    kynverno_policy: kyvernoPolicy,
+                    kyverno_policy: kyvernoPolicy,
                     rego_policy: regoPolicy,
                 },
                 { headers: { "Content-Type": "application/json" } }
