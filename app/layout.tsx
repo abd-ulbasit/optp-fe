@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -25,9 +26,22 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col`}
       >
-        {children}
+        <nav className="w-full flex items-center justify-between px-6 py-4 border-b">
+          <div className="font-bold text-lg">OPTP</div>
+          <div className="flex gap-4">
+            <Link href="/playground" className="hover:underline">
+              Playground
+            </Link>
+            <Link href="/feedback" className="hover:underline">
+              Feedback
+            </Link>
+          </div>
+        </nav>
+        <section>
+          {children}
+        </section>
       </body>
     </html>
   );
